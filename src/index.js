@@ -19,8 +19,8 @@ const BASE_OPTS = {
 let MP = mat4.create();
 
 // MOSUE
-//let oldX, oldY, oldT, dX, dY, dT;
-//let vel = 0;
+let oldX, oldY, oldT, dX, dY, dT;
+let vel = 0;
 
 let mouseOnCard = false;
 let counter = 0;
@@ -36,12 +36,6 @@ function updateMouse(e) {
   oldT = e.timeStamp;
   vel = (dX * dX + dY * dY) / (dT * dT);
   e.preventDefault();
-}
-
-function updateName() {
-  name.style.opacity = vel / 100;
-  console.log(vel);
-  //if (vel) vel -= 0.0001;
 }
 
 function init() {
@@ -111,6 +105,7 @@ function draw(now) {
 window.onresize = updateScreen;
 window.onload = init;
 window.onmousemove = () => {
+  updateMouse();
   card.style.opacity = 1;
   counter = 100;
 };
