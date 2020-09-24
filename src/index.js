@@ -1,75 +1,90 @@
 import { mat4, vec3, vec4, quat } from 'gl-matrix';
 import teapot from './teapot.js';
 
-const canvas = document.getElementById('c');
+let canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
-const WIDTH = window.innerWidth;
-const HEIGHT = window.innerHeight;
-
-canvas.width = WIDTH;
-canvas.height = HEIGHT;
+let WIDTH, HEIGHT;
 
 let projMat = mat4.create();
-const fov = {
-  upDegrees: 45,
-  downDegrees: 45,
-  leftDegrees: 45,
-  rightDegrees: 45,
-};
-mat4.perspectiveFromFieldOfView(projMat, fov, 1, 100);
+const FOV = 0.25 * Math.PI;
 
 let modelMat = mat4.create();
-let rotation = quat.create();
-let translation = vec3.fromValues(0, 0, -20);
-const s = 5;
-let scale = vec3.fromValues(s, s, s);
-let origin = vec3.fromValues(0, -0.5, 0);
-mat4.fromRotationTranslationScaleOrigin(
-  modelMat,
-  rotation,
-  translation,
-  scale,
-  origin
-);
+const BASE_OPTS = {
+  rotation: quat.create(),
+  translation: vec3.fromValues(0, 0, -20),
+  scale: vec3.fromValues(2, 2, 2),
+  origin: vec3.fromValues(0, -0.5, 0),
+};
 
 let MP = mat4.create();
-mat4.multiply(MP, projMat, modelMat);
 
-//prettier-ignore
-const icosahedron = [
-    vec4.fromValues(0.000, 0.000, 1.000, 1),
-    vec4.fromValues(0.894, 0.000, 0.447, 1),
-    vec4.fromValues(0.276, 0.851, 0.447, 1),
-    vec4.fromValues(-0.724, 0.526, 0.447, 1),
-    vec4.fromValues(-0.724, -0.526, 0.447, 1),
-    vec4.fromValues(0.276, -0.851, 0.447, 1),
-    vec4.fromValues(0.724, 0.526, -0.447, 1),
-    vec4.fromValues(-0.276, 0.851, -0.447, 1),
-    vec4.fromValues(-0.894, 0.000, -0.447, 1),
-    vec4.fromValues(-0.276, -0.851, -0.447, 1),
-    vec4.fromValues(0.724, -0.526, -0.447, 1),
-    vec4.fromValues(0.000, 0.000, -1.000, 1),
-];
+// MOSUE
+//let oldX, oldY, oldT, dX, dY, dT;
+//let vel = 0;
 
-function updateModelMatrix(mat, angle) {}
+let mouseOnCard = false;
+let counter = 0;
+
+const card = document.getElementById('card');
+
+function updateMouse(e) {
+  dX = e.pageX - oldX;
+  dY = e.pageY - oldY;
+  dT = e.timeStamp - oldT;
+  oldX = e.pageX;
+  oldY = e.pageY;
+  oldT = e.timeStamp;
+  vel = (dX * dX + dY * dY) / (dT * dT);
+  e.preventDefault();
+}
+
+function updateName() {
+  name.style.opacity = vel / 100;
+  console.log(vel);
+  //if (vel) vel -= 0.0001;
+}
+
+function init() {
+  updateScreen();
+  requestAnimationFrame(draw);
+}
+
+function updateModelMatrix(opts) {
+  Object.assign(BASE_OPTS, opts);
+  mat4.fromRotationTranslationScaleOrigin(
+    modelMat,
+    BASE_OPTS.rotation,
+    BASE_OPTS.translation,
+    BASE_OPTS.scale,
+    BASE_OPTS.origin
+  );
+}
+
+function updateScreen() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  WIDTH = canvas.width;
+  HEIGHT = canvas.height;
+  const aspect = WIDTH / HEIGHT;
+  mat4.perspective(projMat, FOV, aspect, 1, 100);
+}
 
 function NDC(vec) {
   return vec4.fromValues(vec[0] / vec[3], vec[1] / vec[3], vec[2] / vec[3], 1);
 }
 
 function draw(now) {
-  ctx.clearRect(0, 0, WIDTH, HEIGHT);
-  ctx.fillStyle = 'red';
+  ctx.fillStyle = 'lightgray';
+  ctx.fillRect(0, 0, WIDTH, HEIGHT);
+  ctx.fillStyle = 'black';
   let xRange, yRange, zRange, xScreen, yScreen;
-  quat.identity(rotation);
-  quat.rotateX(rotation, rotation, now * 0.001);
-  mat4.fromRotationTranslationScaleOrigin(
-    modelMat,
-    rotation,
-    translation,
-    scale,
-    origin
-  );
+
+  const rotationQuat = quat.create();
+  const t = now * 0.01;
+  quat.fromEuler(rotationQuat, t, t, t);
+
+  updateModelMatrix({ rotation: rotationQuat });
+
   mat4.multiply(MP, projMat, modelMat);
   for (let i = 0, numPoints = teapot.length; i < numPoints; i++) {
     const p = teapot[i];
@@ -83,12 +98,27 @@ function draw(now) {
     xScreen = xRange * WIDTH;
     yScreen = yRange * HEIGHT;
     ctx.beginPath();
-    ctx.arc(xScreen, yScreen, 10 * ((1 - zRange) * 10), 0, Math.PI * 2);
+    ctx.arc(xScreen, yScreen, 10 * ((1 - zRange) * 15), 0, Math.PI * 2);
     ctx.fill();
     ctx.closePath();
   }
+
+  if (counter-- == 0 && !mouseOnCard) card.style.opacity = 0;
+
   requestAnimationFrame(draw);
 }
 
-requestAnimationFrame(draw);
-//draw();
+window.onresize = updateScreen;
+window.onload = init;
+window.onmousemove = () => {
+  card.style.opacity = 1;
+  counter = 100;
+};
+card.onmouseover = () => {
+  mouseOnCard = true;
+  card.classList.toggle('pop', true);
+};
+card.onmouseout = () => {
+  mouseOnCard = false;
+  card.classList.toggle('pop', false);
+};
