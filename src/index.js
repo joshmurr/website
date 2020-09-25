@@ -8,7 +8,7 @@ let WIDTH, HEIGHT;
 
 let projMat = mat4.create();
 const FOV = 0.25 * Math.PI;
-let cam = vec4.fromValues(0, 0, 20, 1);
+let cam = vec4.fromValues(0, 10, 20, 1);
 
 let modelMat = mat4.create();
 const BASE_OPTS = {
@@ -72,7 +72,7 @@ function NDC(vec) {
 
 function getColorFromDist(vec, origin, min, max, diff) {
   const dist = vec3.dist(vec, origin);
-  const col = Math.floor(((dist - min) / diff) * 200);
+  const col = 200 - Math.floor(((dist - min) / diff) * 200);
   return 'rgb(' + col + ',' + col + ',' + col + ')';
 }
 
