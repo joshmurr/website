@@ -70,13 +70,9 @@ function NDC(vec) {
   return vec4.fromValues(vec[0] / vec[3], vec[1] / vec[3], vec[2] / vec[3], 1);
 }
 
-function getColor(dist) {}
-
 function getColorFromDist(vec, origin, min, max, diff) {
   const dist = vec3.dist(vec, origin);
-
-  const col = Math.floor(((dist - min) / diff) * 255);
-
+  const col = Math.floor(((dist - min) / diff) * 200);
   return 'rgb(' + col + ',' + col + ',' + col + ')';
 }
 
@@ -98,30 +94,29 @@ function draw(now) {
 
   mat4.multiply(MP, projMat, modelMat);
 
-  for (let i = 0, numPoints = teapot.length; i < numPoints; i++) {
-    const p = teapot[i];
+  let transformedPoints = teapot.map((p) => {
     let tp = vec4.create();
+    vec4.transformMat4(tp, p, MP);
+    return tp;
+  });
 
-    tp = vec4.transformMat4(tp, p, MP);
+  transformedPoints.sort((a, b) => vec3.dist(a, cam) - vec3.dist(b, cam));
+
+  for (const p of transformedPoints) {
     if (firstRun) {
-      let dist = vec3.dist(tp, cam);
+      let dist = vec3.dist(p, cam);
       // To calculate the min and max distance
       if (maxDist < dist) maxDist = dist;
       if (minDist > dist) minDist = dist;
     } else {
-      ctx.fillStyle = getColorFromDist(tp, cam, minDist, maxDist, diffDist);
-      if (i == 0) console.log(ctx.fillStyle);
+      ctx.fillStyle = getColorFromDist(p, cam, minDist, maxDist, diffDist);
     }
-    tp = NDC(tp);
-    xRange = (tp[0] + 1) * 0.5;
-    yRange = 1 - (tp[1] + 1) * 0.5;
-    zRange = (tp[2] + 1) * 0.5;
+    let p_NDC = NDC(p);
+    xRange = (p_NDC[0] + 1) * 0.5;
+    yRange = 1 - (p_NDC[1] + 1) * 0.5;
+    zRange = (p_NDC[2] + 1) * 0.5;
     xScreen = xRange * WIDTH;
     yScreen = yRange * HEIGHT;
-
-    //const col = Math.floor((i / numPoints) * 255);
-
-    //console.log(maxDist);
 
     ctx.beginPath();
     ctx.arc(xScreen, yScreen, 10 * ((1 - zRange) * 15), 0, Math.PI * 2);
