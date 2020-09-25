@@ -1,3 +1,7 @@
+:root {
+  --pop: 1px;
+}
+
 html {
   box-sizing: border-box;
 }
@@ -14,4 +18,38 @@ canvas {
 
 body {
   overflow: hidden;
+  font-family: 'Roboto', sans-serif;
+}
+#card {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 320px;
+  height: 180px;
+  padding: 10px 20px;
+  background-color: rgba(255, 225, 225, 0.8);
+  border-radius: 15px;
+  opacity: 0;
+  transition: opacity 1.5s, transform 0.5s, box-shadow 0.5s ease-in;
+}
+#card > * {
+  display: block;
+  color: black;
+}
+
+#card:hover {
+  box-shadow: calc(var(--pop) * 2) calc(var(--pop) * 2) 0 var(--pop)
+    rgba(255, 180, 180, 0.8);
+  transform: translate(calc(var(--pop) * -1), calc(var(--pop) * -1));
+}
+
+h3 {
+  font-style: normal;
+}
+a {
+  text-decoration: none;
+  font-style: italic;
+}
+a:hover {
+  text-decoration: underline;
 }

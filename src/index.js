@@ -13,7 +13,7 @@ let modelMat = mat4.create();
 const BASE_OPTS = {
   rotation: quat.create(),
   translation: vec3.fromValues(0, 0, -20),
-  scale: vec3.fromValues(2, 2, 2),
+  scale: vec3.fromValues(2, -2, 2),
   origin: vec3.fromValues(0, -0.5, 0),
 };
 
