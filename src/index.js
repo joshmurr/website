@@ -1,5 +1,6 @@
 import { mat4, vec3, vec4, quat } from 'gl-matrix';
 import teapot from './teapot.js';
+import './styles.css';
 
 let canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
@@ -104,8 +105,8 @@ function draw(now) {
 
 window.onresize = updateScreen;
 window.onload = init;
-window.onmousemove = () => {
-  updateMouse();
+window.onmousemove = (e) => {
+  updateMouse(e);
   card.style.opacity = 1;
   counter = 100;
 };
