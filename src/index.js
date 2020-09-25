@@ -8,6 +8,7 @@ let WIDTH, HEIGHT;
 
 let projMat = mat4.create();
 const FOV = 0.25 * Math.PI;
+let cam = vec4.fromValues(0, 0, 20, 1);
 
 let modelMat = mat4.create();
 const BASE_OPTS = {
@@ -18,6 +19,7 @@ const BASE_OPTS = {
 };
 
 let MP = mat4.create();
+vec4.transformMat4(cam, cam, MP);
 
 // MOSUE
 let oldX, oldY, oldT, dX, dY, dT;
@@ -68,10 +70,24 @@ function NDC(vec) {
   return vec4.fromValues(vec[0] / vec[3], vec[1] / vec[3], vec[2] / vec[3], 1);
 }
 
+function getColor(dist) {}
+
+function getColorFromDist(vec, origin, min, max, diff) {
+  const dist = vec3.dist(vec, origin);
+
+  const col = Math.floor(((dist - min) / diff) * 255);
+
+  return 'rgb(' + col + ',' + col + ',' + col + ')';
+}
+
+let firstRun = true;
+let maxDist = 0;
+let minDist = 100;
+let diffDist = 0;
 function draw(now) {
   ctx.fillStyle = 'lightgray';
   ctx.fillRect(0, 0, WIDTH, HEIGHT);
-  ctx.fillStyle = 'black';
+  //ctx.fillStyle = 'black';
   let xRange, yRange, zRange, xScreen, yScreen;
 
   const rotationQuat = quat.create();
@@ -81,25 +97,42 @@ function draw(now) {
   updateModelMatrix({ rotation: rotationQuat });
 
   mat4.multiply(MP, projMat, modelMat);
+
   for (let i = 0, numPoints = teapot.length; i < numPoints; i++) {
     const p = teapot[i];
     let tp = vec4.create();
+
     tp = vec4.transformMat4(tp, p, MP);
+    if (firstRun) {
+      let dist = vec3.dist(tp, cam);
+      // To calculate the min and max distance
+      if (maxDist < dist) maxDist = dist;
+      if (minDist > dist) minDist = dist;
+    } else {
+      ctx.fillStyle = getColorFromDist(tp, cam, minDist, maxDist, diffDist);
+      if (i == 0) console.log(ctx.fillStyle);
+    }
     tp = NDC(tp);
     xRange = (tp[0] + 1) * 0.5;
     yRange = 1 - (tp[1] + 1) * 0.5;
     zRange = (tp[2] + 1) * 0.5;
-
     xScreen = xRange * WIDTH;
     yScreen = yRange * HEIGHT;
+
+    //const col = Math.floor((i / numPoints) * 255);
+
+    //console.log(maxDist);
+
     ctx.beginPath();
     ctx.arc(xScreen, yScreen, 10 * ((1 - zRange) * 15), 0, Math.PI * 2);
     ctx.fill();
     ctx.closePath();
   }
 
-  if (counter-- == 0 && !mouseOnCard) card.style.opacity = 0;
+  diffDist = maxDist - minDist;
+  firstRun = false;
 
+  if (counter-- == 0 && !mouseOnCard) card.style.opacity = 0;
   requestAnimationFrame(draw);
 }
 
