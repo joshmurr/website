@@ -81,14 +81,14 @@ let maxDist = 0;
 let minDist = 100;
 let diffDist = 0;
 function draw(now) {
-  ctx.fillStyle = 'lightgray';
+  ctx.fillStyle = 'white';
   ctx.fillRect(0, 0, WIDTH, HEIGHT);
   //ctx.fillStyle = 'black';
   let xRange, yRange, zRange, xScreen, yScreen;
 
   const rotationQuat = quat.create();
   const t = now * 0.01;
-  quat.fromEuler(rotationQuat, t, t, t);
+  quat.fromEuler(rotationQuat, oldX * 0.1, oldY * -0.1, t);
 
   updateModelMatrix({ rotation: rotationQuat });
 
