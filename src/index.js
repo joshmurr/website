@@ -21,9 +21,9 @@ const BASE_OPTS = {
 let MP = mat4.create();
 vec4.transformMat4(cam, cam, MP);
 
-// MOSUE
-let oldX, oldY, oldT, dX, dY, dT;
-let vel = 0;
+// MOUSE
+let oldX, oldY; //, oldT, dX, dY, dT;
+//let vel = 0;
 
 let mouseOnCard = false;
 let counter = 0;
@@ -31,18 +31,20 @@ let counter = 0;
 const card = document.getElementById('card');
 
 function updateMouse(e) {
-  dX = e.pageX - oldX;
-  dY = e.pageY - oldY;
-  dT = e.timeStamp - oldT;
+  //dX = e.pageX - oldX;
+  //dY = e.pageY - oldY;
+  //dT = e.timeStamp - oldT;
   oldX = e.pageX;
   oldY = e.pageY;
-  oldT = e.timeStamp;
-  vel = (dX * dX + dY * dY) / (dT * dT);
+  //oldT = e.timeStamp;
+  //vel = (dX * dX + dY * dY) / (dT * dT);
   e.preventDefault();
 }
 
 function init() {
   updateScreen();
+  oldX = WIDTH / 2;
+  oldY = HEIGHT / 2;
   requestAnimationFrame(draw);
 }
 
@@ -83,7 +85,6 @@ let diffDist = 0;
 function draw(now) {
   ctx.fillStyle = 'white';
   ctx.fillRect(0, 0, WIDTH, HEIGHT);
-  //ctx.fillStyle = 'black';
   let xRange, yRange, zRange, xScreen, yScreen;
 
   const rotationQuat = quat.create();
@@ -125,6 +126,7 @@ function draw(now) {
   }
 
   diffDist = maxDist - minDist;
+  if (firstRun) console.log(minDist, maxDist, diffDist);
   firstRun = false;
 
   if (counter-- == 0 && !mouseOnCard) card.style.opacity = 0;
