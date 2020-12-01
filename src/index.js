@@ -12,26 +12,23 @@ const nextShape = () => {
   const keys = Object.keys(Shapes);
   return Shapes[keys[++SELECT % keys.length]];
 };
-let SHAPE = nextShape();
 
+let SHAPE = Shapes.teapot;
 let projMat = mat4.create();
 const FOV = 0.25 * Math.PI;
 let cam = vec4.fromValues(0, 0, 20, 1);
 
 let modelMat = mat4.create();
-
 let MP = mat4.create();
 vec4.transformMat4(cam, cam, MP);
 
 // MOUSE
-let oldX, oldY; //, oldT, dX, dY, dT;
-//let vel = 0;
+let oldX, oldY; //, oldT, dX, dY, dT, vel = 0;
 
 let mouseOnCard = false;
 let counter = 0;
 
 const card = document.getElementById('card');
-
 function updateMouse(e) {
   //dX = e.pageX - oldX;
   //dY = e.pageY - oldY;
