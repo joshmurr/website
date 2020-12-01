@@ -1,22 +1,24 @@
 import { mat4, vec3, vec4, quat } from 'gl-matrix';
-import teapot from './teapot.js';
+import * as Shapes from './shapes.js';
 import './styles.css';
 
 let canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
-let WIDTH, HEIGHT;
+let WIDTH,
+  HEIGHT,
+  SELECT = 0;
+
+const nextShape = () => {
+  const keys = Object.keys(Shapes);
+  return Shapes[keys[++SELECT % keys.length]];
+};
+let SHAPE = nextShape();
 
 let projMat = mat4.create();
 const FOV = 0.25 * Math.PI;
 let cam = vec4.fromValues(0, 0, 20, 1);
 
 let modelMat = mat4.create();
-const BASE_OPTS = {
-  rotation: quat.create(),
-  translation: vec3.fromValues(0, 0, -20),
-  scale: vec3.fromValues(2, -2, 2),
-  origin: vec3.fromValues(0, -0.5, 0),
-};
 
 let MP = mat4.create();
 vec4.transformMat4(cam, cam, MP);
@@ -49,6 +51,12 @@ function init() {
 }
 
 function updateModelMatrix(opts) {
+  let BASE_OPTS = {
+    rotation: quat.create(),
+    translation: vec3.fromValues(0, 0, -20),
+    scale: vec3.fromValues(SHAPE.scale, -SHAPE.scale, SHAPE.scale),
+    origin: vec3.fromValues(0, SHAPE.offset, 0),
+  };
   Object.assign(BASE_OPTS, opts);
   mat4.fromRotationTranslationScaleOrigin(
     modelMat,
@@ -89,13 +97,13 @@ function draw(now) {
 
   const rotationQuat = quat.create();
   const t = now * 0.01;
-  quat.fromEuler(rotationQuat, oldX * 0.1, oldY * -0.1, t);
+  quat.fromEuler(rotationQuat, oldY * 0.1, oldX * 0.1, t);
 
   updateModelMatrix({ rotation: rotationQuat });
 
   mat4.multiply(MP, projMat, modelMat);
 
-  let transformedPoints = teapot.map((p) => {
+  let transformedPoints = SHAPE.vecs.map((p) => {
     let tp = vec4.create();
     vec4.transformMat4(tp, p, MP);
     return tp;
@@ -126,7 +134,6 @@ function draw(now) {
   }
 
   diffDist = maxDist - minDist;
-  if (firstRun) console.log(minDist, maxDist, diffDist);
   firstRun = false;
 
   if (counter-- == 0 && !mouseOnCard) card.style.opacity = 0;
@@ -148,3 +155,5 @@ card.onmouseout = () => {
   mouseOnCard = false;
   card.classList.toggle('pop', false);
 };
+
+canvas.addEventListener('click', () => (SHAPE = nextShape()));
